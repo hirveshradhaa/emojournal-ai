@@ -64,7 +64,15 @@ def list_entries():
 @app.route("/health")
 def health():
     return {"ok": True}, 200
-
+import os
+@app.route("/init-db")
+def init_db():
+    if os.getenv("ALLOW_INIT_DB") != "1":
+        return {"error": "init disabled"}, 403
+    from models import db  # ensure imported
+    with app.app_context():
+        db.create_all()
+    return {"ok": True, "message": "Tables created"}, 200
 @app.route("/entries/<int:entry_id>", methods=["DELETE"])
 def delete_entry(entry_id):
     e = JournalEntry.query.get(entry_id)
