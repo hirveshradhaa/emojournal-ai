@@ -1,5 +1,7 @@
 import os
 from datetime import datetime
+from sqlalchemy import text
+
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -33,22 +35,22 @@ else:
 
 # ---------- Routes ----------
 
+
 @app.route("/health")
 def health():
-    """Simple health check + DB connectivity test."""
+    ok = True
     db_ok = True
     try:
         with db.engine.connect() as conn:
-            conn.execute(db.text("SELECT 1"))
+            conn.execute(text("SELECT 1"))
     except Exception:
         db_ok = False
     return jsonify({
-        "ok": True,
+        "ok": ok,
         "db_ok": db_ok,
-        "model": os.getenv("OPENROUTER_MODEL", "openrouter/auto"),
+        "model": os.getenv("OPENROUTER_MODEL", "not-set"),
         "time": datetime.utcnow().isoformat() + "Z"
     }), 200
-
 
 @app.route("/journal", methods=["POST"])
 def handle_journal():
